@@ -1,4 +1,4 @@
-package com.microsoft.wise.myapplication;
+package com.microsoft.track_my_task;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -6,9 +6,8 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-//import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v4.media.MediaBrowserCompat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -19,14 +18,17 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 
 public class Add_Task extends Activity {
     Database database = new Database(this);
-
+    double latitude, longitude ;
+    LatLng TlatLng;
     int year, month, day;
     Calendar calendar;
     EditText task_name;
     Button set_date, place_pick, save;
+    String Place;
     String dateView;
     String[] sel_location = {"My Locations", "Add new"};
     @Override
@@ -45,6 +47,8 @@ public class Add_Task extends Activity {
         year = calendar.get(Calendar.YEAR);
         month = calendar.get(Calendar.MONTH);
         day = calendar.get(Calendar.DAY_OF_MONTH);
+
+
         showDate(day, month + 1, year);
 
         // date picker to  get gue date
@@ -68,9 +72,11 @@ public class Add_Task extends Activity {
                         Toast.makeText(Add_Task.this, seltd_loc, Toast.LENGTH_SHORT).show();
                         if(seltd_loc.equals("My Locations")){
                             Intent intent = new Intent(Add_Task.this, My_Location.class);
+                            intent.putExtra("task_name", task_name.getText().toString());
                             startActivity(intent);
                         }else if(seltd_loc.equals("Add new")){
                             Intent intent = new Intent(Add_Task.this, MapsActivityNewPlace.class);
+                            intent.putExtra("task_name", task_name.getText().toString());
                             startActivity(intent);
                         }
                     }
@@ -84,32 +90,41 @@ public class Add_Task extends Activity {
             @Override
             public void onClick(View v) {
 
-                Bundle bundle = getIntent().getParcelableExtra("bundle");
-                LatLng latLng = bundle.getParcelable("Lat_Lng");
-                double latitude = latLng.latitude;
-                double longitude = latLng.longitude;
+             // Bundle bundle = getIntent().getParcelableExtra("bundle");
+
+                latitude = getIntent().getDoubleExtra("latitude", 0);
+                longitude = getIntent().getDoubleExtra("longitude", 0);
+                Place = getIntent().getStringExtra("Place_name");
+
+                Toast.makeText(Add_Task.this, Place, Toast.LENGTH_LONG).show();
+                TlatLng = new LatLng(latitude, longitude);
                 if(task_name == null){
                     task_name.requestFocus();
                     task_name.setError("Task name cannot be empty");
-                }
-                if(latLng == null){
+                }else if(TlatLng == null){
                     place_pick.requestFocus();
                     place_pick.setError("select a place");
-                }
-                // inserting the task into task table
-                boolean isInsert = database.insertTask(task_name.getText().toString(), dateView, latitude, longitude);
-                if (isInsert== false) {
-                    Toast.makeText(Add_Task.this, "Task Name  ALREADY EXISTS", Toast.LENGTH_LONG).show();
-                }
-                else{
-                    Intent intent = new Intent(Add_Task.this, To_Do_List.class);
-                    startActivity(intent);
+                } if(new Date(dateView).before(new Date(database.getDate("today")))){
+                    set_date.requestFocus();
+                    set_date.setError("Pick a valid date");
+                    Toast.makeText(Add_Task.this, "Pick a Valid Date", Toast.LENGTH_LONG).show();
+
+                }else {
+                    // inserting the task into task table
+                    boolean isInsert = database.insertTask(task_name.getText().toString(), dateView, latitude, longitude, Place);
+                    if (isInsert == false) {
+                        Toast.makeText(Add_Task.this, "Task Name  ALREADY EXISTS", Toast.LENGTH_LONG).show();
+                    } else {
+                        Intent intent = new Intent(Add_Task.this, HomeActivity.class);
+                        intent.setFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        finish();
+                        startActivity(intent);
+                    }
                 }
 
             }
         });
     }
-
     @Override
     protected Dialog onCreateDialog(int id) {
         if(id == 999){
@@ -122,10 +137,27 @@ public class Add_Task extends Activity {
         public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
             showDate(dayOfMonth, monthOfYear + 1, year);
         }
+
     };
     void showDate(int day, int month, int year){
         dateView = (new StringBuilder().append(day).append("/").append(month).append("/").append(year)).toString();
         set_date.setText(dateView);
         Toast.makeText(this, dateView, Toast.LENGTH_SHORT).show();
     }
+
+   /* protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == 1) {
+            if(resultCode == Activity.RESULT_OK){
+                task_name.setText(data.getStringExtra("Place_name"));
+                latitude = data.getDoubleExtra("latitude", 0);
+                longitude = data.getDoubleExtra("longitude", 0);
+                TlatLng = new LatLng(latitude, longitude);
+                Log.i("lat_lng", TlatLng.toString());
+            }
+            if (resultCode == Activity.RESULT_CANCELED) {
+                //Write your code if there's no result
+            }
+        }
+    }//onActivityResult*/
 }

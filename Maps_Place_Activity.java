@@ -1,8 +1,8 @@
-package com.microsoft.wise.myapplication;
+package com.microsoft.track_my_task;
 
 import android.content.Intent;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -22,7 +22,7 @@ public class Maps_Place_Activity extends FragmentActivity implements OnMapReadyC
 
     PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
 
-    private static LatLng lat_lng ;
+    private static LatLng Plat_lng ;
     Bundle extras;
     //Intent in = getIntent().getExtras();
 //    String place_name = in.getStringExtra("Place_name");
@@ -56,7 +56,8 @@ public class Maps_Place_Activity extends FragmentActivity implements OnMapReadyC
                 Log.i("place", String.valueOf(place.getName()));
                 String toastMsg = String.format("Place: %s", place.getName());
                 Log.i("place LatLng", String.valueOf(place.getLatLng()));
-               lat_lng = place.getLatLng();
+               Plat_lng = place.getLatLng();
+                String address = place.getName().toString();
                 Log.i("Add_place 12", "in  place Activity");
 
                 Toast.makeText(this, toastMsg, Toast.LENGTH_LONG).show();
@@ -64,15 +65,15 @@ public class Maps_Place_Activity extends FragmentActivity implements OnMapReadyC
 
                 Intent intent = new Intent(Maps_Place_Activity.this, Add_Place.class);
                 Toast.makeText(Maps_Place_Activity.this, "Maps", Toast.LENGTH_SHORT);
-                Log.i("Place_name",String.valueOf(lat_lng) );
-                Bundle args = new Bundle();
-                args.putParcelable("Lat_Lng",lat_lng );
+                Log.i("Place_name",String.valueOf(Plat_lng) );
 
-                intent.putExtra("Place_name",place_name);
-                intent.putExtra("bundle",args);
-
+                intent.putExtra("Place_name",address);
+                intent.putExtra("latitude", Plat_lng.latitude);
+                intent.putExtra("longitude", Plat_lng.longitude);
                 startActivity(intent);
-                finish();
+                //setResult(Activity.RESULT_OK,intent);
+                //finish();
+
             }
         }
     }

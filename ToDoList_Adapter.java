@@ -1,9 +1,10 @@
-package com.microsoft.wise.myapplication;
+package com.microsoft.track_my_task;
 
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,25 +19,26 @@ import android.widget.Toast;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 
+import static com.google.android.gms.internal.zzs.TAG;
 
 
 class ToDoList_Adapter extends BaseAdapter {
-    int year, month, day;
-    Calendar calendar;
-    String dateView;
-    private ToDoList_Adapter adapter;
-    To_Do_List to_do_list = new To_Do_List();
-    ArrayList<String> result;
-    Context context;
-    Database database;
-    ArrayList<String> numbers;
-    static final int date_id = 0;
-    private static LayoutInflater inflater=null;
-    public ToDoList_Adapter(To_Do_List to_do_list, ArrayList<String> tasks) {
+    private int year, month, day;
+    private Calendar calendar;
+    private String dateView;
+    private ArrayList<String> result;
+    private Context context;
+    private Database database;
+    private String[] sel_options = {"Reschedule", "Start Task", "Save Task"};
+    private static LayoutInflater inflater= null;
+    public ToDoList_Adapter(HomeActivity to_do_list, ArrayList<String> tasks) {
         // TODO Auto-generated constructor stub
+        Log.i(TAG, "ToDoList_Adapter: " + tasks);
         result=tasks;
+        Log.i(TAG, "ToDoList_Adapter: " + result);
         context= to_do_list;
         database = new Database(context);
         inflater = ( LayoutInflater )context.
@@ -76,7 +78,7 @@ class ToDoList_Adapter extends BaseAdapter {
         // TODO Auto-generated method stub
         Holder holder=new Holder();
         View rowView;
-        rowView = inflater.inflate(R.layout.custom_adapter1, null);
+        rowView = inflater.inflate(R.layout.custom_tasks, null);
         holder.tv=(TextView) rowView.findViewById(R.id.lw1);
         holder.del=(Button) rowView.findViewById(R.id.del);
         holder.edit=(Button) rowView.findViewById(R.id.edit);
@@ -87,7 +89,7 @@ class ToDoList_Adapter extends BaseAdapter {
                 Log.i("task_name = ",result.get(position));
 
                 database.del_Task(result.get(position));
-                Intent in = new Intent(context, To_Do_List.class);
+                Intent in = new Intent(context,HomeActivity.class);
                 context.startActivity(in);
             }
         });
@@ -102,12 +104,12 @@ class ToDoList_Adapter extends BaseAdapter {
                 Double lat = latLng.latitude;
                 Double logn = latLng.longitude;
                 Log.i("updated date : ", dateView);
-                boolean isUpdate = database.UpdateTask(result.get(position),dateView,lat, logn );
+                boolean isUpdate = database.UpdateTask(result.get(position), dateView);
                 if(isUpdate)
                     Toast.makeText(context, "Updated", Toast.LENGTH_LONG).show();
                 else
                     Toast.makeText(context, "Sorry , not updated", Toast.LENGTH_LONG).show();
-                Intent in = new Intent(context, To_Do_List.class);
+                Intent in = new Intent(context, HomeActivity.class);
                 context.startActivity(in);
 
 
@@ -119,6 +121,42 @@ class ToDoList_Adapter extends BaseAdapter {
             public void onClick(View v) {
                 // TODO Auto-generated method stub
                 Toast.makeText(context, "You Clicked "+result.get(position), Toast.LENGTH_LONG).show();
+                    android.app.AlertDialog.Builder adb = new android.app.AlertDialog.Builder(context);
+                    //.setTitle("Select an Option");
+                    adb.setItems(sel_options, new DialogInterface.OnClickListener(){
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            String seltd_loc = Arrays.asList(sel_options).get(which);
+                            // Toast.makeText(Home_Page.this, seltd_loc, Toast.LENGTH_SHORT).show();
+
+
+
+                          if(seltd_loc.equals("Start Task")){
+                                String task = result.get(position);
+                                Intent intent = new Intent(context, Location_represent.class);
+                                intent.putExtra("task_name", task);
+                                Log.i("Task onclick", task);
+                                context.startActivity(intent);
+                            } else if(seltd_loc.equals("Reschedule")){
+                                Intent intent = new Intent(context, Reschedule_task.class);
+                                intent.putExtra("task_name", result.get(position));
+                              intent.putExtra("mode", "update");
+                                context.startActivity(intent);
+                        } else if(seltd_loc.equals("Save Task")){
+                                Log.i("in adapter", "before saving");
+                                //database.save_Task(result.get(position));
+                               if(database.save_Task(result.get(position)) == false)
+                                    Toast.makeText(context, "Not Saved", Toast.LENGTH_SHORT).show();
+                                 else {
+                                    Intent intent = new Intent(context, SavedTasks.class);
+                                    context.startActivity(intent);
+                                }
+                        }
+                    }
+                });
+                android.app.AlertDialog dialog = adb.create();
+                dialog.show();
             }
         });
         return rowView;
@@ -136,7 +174,7 @@ class ToDoList_Adapter extends BaseAdapter {
             showDate(dayOfMonth, monthOfYear + 1, year);
         }
     };
-    void showDate(int year, int month, int day){
+    private void showDate(int year, int month, int day){
         dateView = (new StringBuilder().append(year).append("/").append(month).append("/").append(day)).toString();
         Toast.makeText(context, dateView, Toast.LENGTH_SHORT).show();
     }

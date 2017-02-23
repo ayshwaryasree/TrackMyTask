@@ -1,13 +1,14 @@
-package com.microsoft.wise.myapplication;
+package com.microsoft.track_my_task;
 
 import android.app.Activity;
 import android.content.Context;
-//import android.support.v7.app.AppCompatActivity;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -15,20 +16,30 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 
+//import android.support.v7.app.AppCompatActivity;
+
 public class My_Location extends Activity {
     ListView lv1;
     Context context;
     Cursor cursor;
-    ArrayList<LatLng> latLngs = new ArrayList<LatLng>();
-    ArrayList<String> list = new ArrayList<String>();
+    ArrayList<LatLng> latLngs = new ArrayList<>();
+    ArrayList<String> list = new ArrayList<>();
     Database database = new Database(My_Location.this);
+    Button back;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.my_location);
         lv1 = (ListView)findViewById(R.id.location_list);
-       // Log.i("Add_place 6", "In my_location ");
+        back = (Button) findViewById(R.id.back_home);
 
+        back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent  intent = new Intent(My_Location.this, HomeActivity.class);
+                startActivity(intent);
+            }
+        });
         cursor = database.getLocation();
         if(cursor.getCount() > 0) {
             Log.i( "count", String.valueOf(cursor.getCount()));
@@ -46,7 +57,7 @@ public class My_Location extends Activity {
 
 
        // Toast.makeText(My_Location.this, "retrived", Toast.LENGTH_SHORT).show();
-        latLngs = database.getLatLngs();
+        latLngs = database.getLatLngsLocations();
         context=this;
 
         lv1.setAdapter(new Location_Adapter(this, list ,latLngs ));

@@ -1,10 +1,8 @@
-package com.microsoft.wise.myapplication;
+package com.microsoft.track_my_task;
 
 import android.content.Context;
 import android.content.Intent;
-
 import android.os.Bundle;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,17 +18,14 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.ArrayList;
 
 
-
-
-
 class Location_Adapter extends BaseAdapter {
     My_Location ml = new My_Location();
-    ArrayList<String> result;
-    Context context;
-    ArrayList<LatLng> lat_lngs;
-    LatLng Lat_Lng;
+    private ArrayList<String> result;
+    private Context context;
+    private ArrayList<LatLng> lat_lngs;
+    private LatLng Lat_Lng;
     Database database;
-    private static LayoutInflater inflater=null;
+    private static LayoutInflater inflater = null;
     public Location_Adapter(My_Location locations, ArrayList<String> my_loc, ArrayList<LatLng> lat_lng) {
         // TODO Auto-generated constructor stub
         result= my_loc;
@@ -58,7 +53,7 @@ class Location_Adapter extends BaseAdapter {
         return position;
     }
 
-    public class Holder
+    private class Holder
     {
         TextView tv;
         ImageButton map;
@@ -69,7 +64,7 @@ class Location_Adapter extends BaseAdapter {
         // TODO Auto-generated method stub
         Holder holder=new Holder();
         View rowView;
-        rowView = inflater.inflate(R.layout.custom, null);
+        rowView = inflater.inflate(R.layout.customlocations, null);
         holder.tv=(TextView) rowView.findViewById(R.id.lw1);
         holder.del_Location = (Button)rowView.findViewById(R.id.del_loc);
         holder.map=(ImageButton) rowView.findViewById(R.id.map);
@@ -109,8 +104,12 @@ class Location_Adapter extends BaseAdapter {
                 Toast.makeText(context, "You Clicked "+result.get(position), Toast.LENGTH_LONG).show();
                 Intent in = new Intent(context, Add_Task.class);
                 Bundle args = new Bundle();
-                args.putParcelable("Lat_Lng",database.getLatLng(result.get(position)) );
-                in.putExtra("bundle",args);
+                in.putExtra("latitude", database.getLatitude(result.get(position)));
+                in.putExtra("longitude", database.getLongitude(result.get(position)));
+
+                String place = database.getPlace_name(result.get(position));
+                Log.i("Place_name",place );
+                in.putExtra("Place_name",place);
                 context.startActivity(in);
             }
         });

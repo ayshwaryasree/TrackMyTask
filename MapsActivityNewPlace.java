@@ -1,8 +1,8 @@
-package com.microsoft.wise.myapplication;
+package com.microsoft.track_my_task;
 
 import android.content.Intent;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -10,15 +10,10 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlacePicker;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivityNewPlace extends FragmentActivity implements OnMapReadyCallback {
 
@@ -37,7 +32,7 @@ public class MapsActivityNewPlace extends FragmentActivity implements OnMapReady
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps);
+        setContentView(R.layout.activity_maps_new_place);
 
 
        // extras = getIntent().getExtras();        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -62,6 +57,7 @@ public class MapsActivityNewPlace extends FragmentActivity implements OnMapReady
                 String toastMsg = String.format("Place: %s", place.getName());
                 Log.i("place LatLng", String.valueOf(place.getLatLng()));
                 lat_lng = place.getLatLng();
+                String address = place.getName().toString();
                 Log.i("Add_place 12", "in  place Activity");
 
                 Toast.makeText(this, toastMsg, Toast.LENGTH_LONG).show();
@@ -70,14 +66,15 @@ public class MapsActivityNewPlace extends FragmentActivity implements OnMapReady
                 Intent intent = new Intent(MapsActivityNewPlace.this, Add_Task.class);
                 Toast.makeText(MapsActivityNewPlace.this, "Maps", Toast.LENGTH_SHORT);
                 Log.i("Place_name",String.valueOf(lat_lng) );
-                Bundle args = new Bundle();
-                args.putParcelable("Lat_Lng",lat_lng );
-
-                //intent.putExtra("Place_name",place_name);
-                intent.putExtra("bundle",args);
-
+                intent.putExtra("latitude", lat_lng.latitude);
+                intent.putExtra("longitude", lat_lng.longitude);
+                intent.putExtra("Place_name", address);
                 startActivity(intent);
+               // setResult(Activity.RESULT_OK,intent);
                // finish();
+
+
+
             }
         }
     }
